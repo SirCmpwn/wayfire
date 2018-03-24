@@ -406,6 +406,18 @@ static inline void render_surface_box(GLuint tex[3], int n_tex, const pixman_box
     }
 }
 
+static inline void render_surface_region(GLuint tex[3], int n_tex, const pixman_box32_t& surface_box,
+        pixman_region32_t *region, glm::mat4 transform,
+        glm::vec4 color, uint32_t bits)
+{
+	int n = 0;
+	pixman_box32_t *boxes = pixman_region32_rectangles(region, &n);
+	for (int i = 0; i < n; i++) {
+		render_surface_box(tex, n_tex, surface_box, boxes[i],
+				transform, color, bits | TEXTURE_USE_TEX_GEOMETRY);
+	}
+}
+
 static void render_surface(weston_surface *surface, pixman_region32_t *damage,
         int x, int y, glm::mat4 transform, glm::vec4 color, uint32_t bits)
 {
@@ -425,17 +437,18 @@ static void render_surface(weston_surface *surface, pixman_region32_t *damage,
     surface_box.x1 = x; surface_box.y1 = y;
     surface_box.x2 = x + surface->width; surface_box.y2 = y + surface->height;
 
-    int n = 0;
-    pixman_box32_t *boxes = pixman_region32_rectangles(&damaged_region, &n);
-
     int n_tex;
     GLuint *tex = (GLuint*)render_manager::renderer_api->surface_get_textures(surface, &n_tex);
 
-    for (int i = 0; i < n; i++) {
-        render_surface_box(tex, n_tex, surface_box, boxes[i],
-                transform, color, bits | TEXTURE_USE_TEX_GEOMETRY);
-    }
+    pixman_region32_t opaque;
+    pixman_region32_init(&opaque);
+    pixman_region32_intersect(&opaque, &damaged_region, &surface->opaque);
+    render_surface_region(tex, n_tex, surface_box, &opaque, transform, color, bits | TEXTURE_RGBX);
+    pixman_region32_subtract(&damaged_region, &damaged_region, &opaque);
+    render_surface_region(tex, n_tex, surface_box, &damaged_region, transform, color, bits);
+
     pixman_region32_fini(&damaged_region);
+    pixman_region32_fini(&opaque);
 
     weston_subsurface *sub;
     if (!wl_list_empty(&surface->subsurface_list)) {

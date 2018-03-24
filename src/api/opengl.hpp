@@ -30,6 +30,7 @@ void gl_call(const char*, uint32_t, const char*);
 #define TEXTURE_TRANSFORM_USE_DEVCOORD (1 << 3)
 #define TEXTURE_USE_TEX_GEOMETRY       (1 << 4)
 #define DONT_RELOAD_PROGRAM            (1 << 5)
+#define TEXTURE_RGBX                   (1 << 6)
 
 namespace OpenGL {
 
@@ -41,7 +42,7 @@ namespace OpenGL {
     /* Different Context is kept for each output */
     /* Each of the following functions uses the currently bound context */
     struct context_t {
-        GLuint program, min_program;
+        GLuint program_rgba, program_rgbx;
 
         GLuint mvpID, colorID;
         GLuint position, uvPosition;

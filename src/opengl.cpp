@@ -138,29 +138,36 @@ namespace OpenGL {
                     .append("/frag.glsl").c_str(),
                      GL_FRAGMENT_SHADER);
 
-        ctx->program = GL_CALL(glCreateProgram());
+        GLuint rgbx= load_shader(std::string(shaderSrcPath)
+                    .append("/frag_rgbx.glsl").c_str(),
+                     GL_FRAGMENT_SHADER);
 
-        GL_CALL(glAttachShader(ctx->program, vss));
-        GL_CALL(glAttachShader(ctx->program, fss));
-        GL_CALL(glLinkProgram(ctx->program));
-        GL_CALL(glUseProgram(ctx->program));
+        ctx->program_rgba = GL_CALL(glCreateProgram());
+	ctx->program_rgbx = GL_CALL(glCreateProgram());
 
-        ctx->mvpID   = GL_CALL(glGetUniformLocation(ctx->program, "MVP"));
-        ctx->colorID = GL_CALL(glGetUniformLocation(ctx->program, "color"));
+        GL_CALL(glAttachShader(ctx->program_rgba, vss));
+        GL_CALL(glAttachShader(ctx->program_rgba, fss));
+        GL_CALL(glLinkProgram(ctx->program_rgba));
+        GL_CALL(glUseProgram(ctx->program_rgba));
 
-        glm::mat4 identity;
-        GL_CALL(glUniformMatrix4fv(ctx->mvpID, 1, GL_FALSE, &identity[0][0]));
+        GL_CALL(glAttachShader(ctx->program_rgbx, vss));
+        GL_CALL(glAttachShader(ctx->program_rgbx, rgbx));
+        GL_CALL(glLinkProgram(ctx->program_rgbx));
+        GL_CALL(glUseProgram(ctx->program_rgbx));
 
-        ctx->w2ID = GL_CALL(glGetUniformLocation(ctx->program, "w2"));
-        ctx->h2ID = GL_CALL(glGetUniformLocation(ctx->program, "h2"));
+        ctx->mvpID   = GL_CALL(glGetUniformLocation(ctx->program_rgba, "MVP"));
+        ctx->colorID = GL_CALL(glGetUniformLocation(ctx->program_rgba, "color"));
 
-        ctx->position   = GL_CALL(glGetAttribLocation(ctx->program, "position"));
-        ctx->uvPosition = GL_CALL(glGetAttribLocation(ctx->program, "uvPosition"));
+        ctx->w2ID = GL_CALL(glGetUniformLocation(ctx->program_rgba, "w2"));
+        ctx->h2ID = GL_CALL(glGetUniformLocation(ctx->program_rgba, "h2"));
+
+        ctx->position   = GL_CALL(glGetAttribLocation(ctx->program_rgba, "position"));
+        ctx->uvPosition = GL_CALL(glGetAttribLocation(ctx->program_rgba, "uvPosition"));
         return ctx;
     }
 
     void use_default_program() {
-         GL_CALL(glUseProgram(bound->program));
+         GL_CALL(glUseProgram(bound->program_rgba));
     }
 
     void bind_context(context_t *ctx) {
@@ -182,29 +189,39 @@ namespace OpenGL {
     }
 
     void release_context(context_t *ctx) {
-        glDeleteProgram(ctx->program);
-        delete ctx;
+	    glDeleteProgram(ctx->program_rgba);
+	    glDeleteProgram(ctx->program_rgbx);
+	    delete ctx;
     }
 
     void render_texture(GLuint tex, const weston_geometry& g,
-            const texture_geometry& texg, uint32_t bits)
+		    const texture_geometry& texg, uint32_t bits)
     {
-        if ((bits & DONT_RELOAD_PROGRAM) == 0)
-            GL_CALL(glUseProgram(bound->program));
+	    if ((bits & DONT_RELOAD_PROGRAM) == 0)
+	    {
+		    if ((bits & TEXTURE_RGBX))
+		    {
+			    GL_CALL(glUseProgram(bound->program_rgbx));
+		    }
+		    else
+		    {
+			    GL_CALL(glUseProgram(bound->program_rgba));
+		    }
+	    }
 
-        GL_CALL(glUniform1f(bound->w2ID, bound->width / 2));
-        GL_CALL(glUniform1f(bound->h2ID, bound->height / 2));
+	    GL_CALL(glUniform1f(bound->w2ID, bound->width / 2));
+	    GL_CALL(glUniform1f(bound->h2ID, bound->height / 2));
 
-        if ((bits & TEXTURE_TRANSFORM_USE_DEVCOORD))
-        {
-            use_device_viewport();
-        } else
-        {
-            GL_CALL(glViewport(0, 0, bound->width, bound->height));
-        }
+	    if ((bits & TEXTURE_TRANSFORM_USE_DEVCOORD))
+	    {
+		    use_device_viewport();
+	    } else
+	    {
+		    GL_CALL(glViewport(0, 0, bound->width, bound->height));
+	    }
 
-        float w2 = float(bound->width) / 2.;
-        float h2 = float(bound->height) / 2.;
+	    float w2 = float(bound->width) / 2.;
+	    float h2 = float(bound->height) / 2.;
 
         float tlx = float(g.x) - w2,
               tly = h2 - float(g.y);
@@ -263,10 +280,17 @@ namespace OpenGL {
             const texture_geometry& texg, glm::mat4 model,
             glm::vec4 color, uint32_t bits)
     {
-        GL_CALL(glUseProgram(bound->program));
+	    if (bits & TEXTURE_RGBX)
+	    {
+		    GL_CALL(glUseProgram(bound->program_rgbx));
+	    }
+	    else
+	    {
+		    GL_CALL(glUseProgram(bound->program_rgba));
+	    }
 
-        GL_CALL(glUniformMatrix4fv(bound->mvpID, 1, GL_FALSE, &model[0][0]));
-        GL_CALL(glUniform4fv(bound->colorID, 1, &color[0]));
+    	    GL_CALL(glUniformMatrix4fv(bound->mvpID, 1, GL_FALSE, &model[0][0]));
+	    GL_CALL(glUniform4fv(bound->colorID, 1, &color[0]));
 
         GL_CALL(glEnable(GL_BLEND));
         GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
