@@ -30,7 +30,15 @@ void gl_call(const char*, uint32_t, const char*);
 #define TEXTURE_TRANSFORM_USE_DEVCOORD (1 << 3)
 #define TEXTURE_USE_TEX_GEOMETRY       (1 << 4)
 #define DONT_RELOAD_PROGRAM            (1 << 5)
-#define TEXTURE_RGBX                   (1 << 6)
+
+
+#define TEXTURE_RGBA     (1 << 25)
+#define TEXTURE_RGBX     (1 << 26)
+#define TEXTURE_EGL      (1 << 27)
+#define TEXTURE_Y_UV     (1 << 28)
+#define TEXTURE_Y_U_V    (1 << 29)
+#define TEXTURE_Y_XUXV   (1 << 30)
+
 
 namespace OpenGL {
 
@@ -41,8 +49,14 @@ namespace OpenGL {
 
     /* Different Context is kept for each output */
     /* Each of the following functions uses the currently bound context */
-    struct context_t {
-        GLuint program_rgba, program_rgbx;
+    struct context_t
+    {
+        GLuint program_rgba,
+               program_rgbx,
+               program_egl,
+               program_y_uv,
+               program_y_u_v,
+               program_y_xuxv;
 
         GLuint mvpID, colorID;
         GLuint position, uvPosition;
@@ -64,10 +78,26 @@ namespace OpenGL {
     /* texg arguments are used only when bits has USE_TEX_GEOMETRY
      * if you don't wish to use them, simply pass {} as argument */
     void render_transformed_texture(GLuint text, const weston_geometry& g,
-            const texture_geometry& texg, glm::mat4 transform = glm::mat4(),
-            glm::vec4 color = glm::vec4(1.f), uint32_t bits = 0);
+                                    const texture_geometry& texg,
+                                    glm::mat4 transform = glm::mat4(),
+                                    glm::vec4 color = glm::vec4(1.f),
+                                    uint32_t bits = 0);
+
+    void render_transformed_texture(GLuint tex[], int n_tex, GLenum target,
+                                    const weston_geometry& g,
+                                    const texture_geometry& texg,
+                                    glm::mat4 transform = glm::mat4(),
+                                    glm::vec4 color = glm::vec4(1.f),
+                                    uint32_t bits = 0);
+
+
     void render_texture(GLuint tex, const weston_geometry& g,
-            const texture_geometry& texg, uint32_t bits);
+                        const texture_geometry& texg, uint32_t bits);
+
+    void render_texture(GLuint tex[], int n_tex, GLenum target,
+                        const weston_geometry& g,
+                        const texture_geometry& texg,
+                        uint32_t bits);
 
     GLuint duplicate_texture(GLuint source_tex, int w, int h);
 
@@ -78,7 +108,7 @@ namespace OpenGL {
             float scale_x = 1, float scale_y = 1);
 
     /* set program to current program */
-    void use_default_program();
+    void use_default_program(uint32_t bits = 0);
 }
 
 #endif
