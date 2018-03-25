@@ -8,4 +8,5 @@ uniform mediump vec4      color;
 void main()
 {
     gl_FragColor = texture2D(smp, uvpos) * color;
+    gl_FragColor.w = color.w;
 }
