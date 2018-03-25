@@ -442,8 +442,12 @@ static void render_surface(weston_surface *surface, pixman_region32_t *damage,
 
     pixman_region32_t opaque;
     pixman_region32_init(&opaque);
-    pixman_region32_intersect(&opaque, &damaged_region, &surface->opaque);
+    pixman_region32_copy(&opaque, &surface->opaque);
+    pixman_region32_translate(&opaque, x, y);
+
+    pixman_region32_intersect(&opaque, &damaged_region, &opaque);
     render_surface_region(tex, n_tex, surface_box, &opaque, transform, color, bits | TEXTURE_RGBX);
+
     pixman_region32_subtract(&damaged_region, &damaged_region, &opaque);
     render_surface_region(tex, n_tex, surface_box, &damaged_region, transform, color, bits);
 
