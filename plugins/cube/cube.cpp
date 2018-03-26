@@ -315,7 +315,7 @@ class wayfire_cube : public wayfire_plugin_t {
         GL_CALL(glUniform1f(program.easeID, current_ease));
 #endif
 
-        glm::mat4 base_model = glm::scale(glm::mat4(),
+        glm::mat4 base_model = glm::scale(glm::mat4(1.0),
                 glm::vec3(1. / zoomFactor, 1. / zoomFactor,
                     1. / zoomFactor));
 

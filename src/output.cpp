@@ -460,6 +460,7 @@ void render_manager::transformation_renderer()
             output->workspace->get_current_workspace());
 
     OpenGL::use_device_viewport();
+    GL_CALL(glClearColor(1, 0, 0, 1));
     GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
     auto it = views.rbegin();
@@ -700,8 +701,8 @@ void render_manager::workspace_stream_update(wf_workspace_stream *stream,
 
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stream->fbuff));
 
-    glm::mat4 scale = glm::scale(glm::mat4(), glm::vec3(scale_x, scale_y, 1));
-    glm::mat4 translate = glm::translate(glm::mat4(), glm::vec3(scale_x - 1, scale_y - 1, 0));
+    glm::mat4 scale = glm::scale(glm::mat4(1.0), glm::vec3(scale_x, scale_y, 1));
+    glm::mat4 translate = glm::translate(glm::mat4(1.0), glm::vec3(scale_x - 1, scale_y - 1, 0));
     std::swap(wayfire_view_transform::global_scale, scale);
     std::swap(wayfire_view_transform::global_translate, translate);
 

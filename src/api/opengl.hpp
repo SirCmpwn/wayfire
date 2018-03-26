@@ -79,14 +79,14 @@ namespace OpenGL {
      * if you don't wish to use them, simply pass {} as argument */
     void render_transformed_texture(GLuint text, const weston_geometry& g,
                                     const texture_geometry& texg,
-                                    glm::mat4 transform = glm::mat4(),
+                                    glm::mat4 transform = glm::mat4(1.0),
                                     glm::vec4 color = glm::vec4(1.f),
                                     uint32_t bits = 0);
 
     void render_transformed_texture(GLuint tex[], int n_tex, GLenum target,
                                     const weston_geometry& g,
                                     const texture_geometry& texg,
-                                    glm::mat4 transform = glm::mat4(),
+                                    glm::mat4 transform = glm::mat4(1.0),
                                     glm::vec4 color = glm::vec4(1.f),
                                     uint32_t bits = 0);
 

@@ -75,10 +75,10 @@ class zoom_animation : public animation_base
         float tx = (cx - og.width / 2 ) * 2. / og.width;
         float ty = (og.height / 2 - cy) * 2. / og.height;
 
-        view->transform.translation = glm::translate(glm::mat4(),
+        view->transform.translation = glm::translate(glm::mat4(1.0),
                 {tx, ty, 0});
 
-        view->transform.scale = glm::scale(glm::mat4(), {c, c, 1});
+        view->transform.scale = glm::scale(glm::mat4(1.0), {c, c, 1});
 
         auto compositor_geometry = view->geometry;
 
@@ -96,7 +96,7 @@ class zoom_animation : public animation_base
     ~zoom_animation()
     {
         view->transform.color[3] = 1.0f;
-        view->transform.scale = glm::mat4();
-        view->transform.translation = glm::mat4();
+        view->transform.scale = glm::mat4(1.0);
+        view->transform.translation = glm::mat4(1.0);
     }
 };

@@ -265,6 +265,8 @@ namespace OpenGL {
             coordData[6] = texg.x1; coordData[7] = texg.y1;
         }
 
+	debug << g.x << "x" << g.y << " " << g.width << "x" << g.height << std::endl;
+
         GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
         GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
@@ -299,8 +301,16 @@ namespace OpenGL {
                                     glm::mat4 transform, glm::vec4 color, uint32_t bits)
     {
         use_default_program(bits);
-
         GL_CALL(glUniformMatrix4fv(bound->mvpID, 1, GL_FALSE, &transform[0][0]));
+
+	debug << "###############" << std::endl;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+			debug << transform[i][j] << " ";
+		debug << std::endl;
+	}
+
         GL_CALL(glUniform4fv(bound->colorID, 1, &color[0]));
 
         GL_CALL(glEnable(GL_BLEND));

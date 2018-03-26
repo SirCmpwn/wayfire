@@ -19,9 +19,9 @@ class wayfire_view_transform {
 
         static glm::mat4 global_view_projection;
     public:
-        glm::mat4 rotation;
-        glm::mat4 scale;
-        glm::mat4 translation;
+        glm::mat4 rotation = glm::mat4(1.0);
+        glm::mat4 scale = glm::mat4(1.0);
+        glm::mat4 translation = glm::mat4(1.0);
 
         glm::vec4 color;
     public:

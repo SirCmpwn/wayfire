@@ -1,3 +1,4 @@
+#include "debug.hpp"
 #include "core.hpp"
 #include "opengl.hpp"
 #include "output.hpp"
@@ -14,10 +15,10 @@
 
 /* misc definitions */
 
-glm::mat4 wayfire_view_transform::global_rotation;
-glm::mat4 wayfire_view_transform::global_scale;
-glm::mat4 wayfire_view_transform::global_translate;
-glm::mat4 wayfire_view_transform::global_view_projection;
+glm::mat4 wayfire_view_transform::global_rotation = glm::mat4(1.0);
+glm::mat4 wayfire_view_transform::global_scale = glm::mat4(1.0);
+glm::mat4 wayfire_view_transform::global_translate = glm::mat4(1.0);
+glm::mat4 wayfire_view_transform::global_view_projection = glm::mat4(1.0);
 
 glm::mat4 wayfire_view_transform::calculate_total_transform()
 {

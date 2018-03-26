@@ -360,7 +360,7 @@ class wayfire_expo : public wayfire_plugin_t {
                 break;
         }
 
-        glm::mat4 matrix;
+        glm::mat4 matrix(1.0);
         matrix = glm::rotate(matrix, angle, glm::vec3(0, 0, 1));
         matrix = glm::translate(matrix, glm::vec3(render_params.off_x, render_params.off_y, 0));
         matrix = glm::scale(matrix, glm::vec3(render_params.scale_x, render_params.scale_y, 1));

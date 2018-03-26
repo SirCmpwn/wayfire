@@ -232,9 +232,9 @@ class view_switcher : public wayfire_plugin_t
 
         auto bg = output->workspace->get_background_view();
         if (bg) {
-            bg->transform.translation = glm::translate(glm::mat4(),
+            bg->transform.translation = glm::translate(glm::mat4(1.0),
                     glm::vec3(0, 0, -9));
-            bg->transform.scale = glm::scale(glm::mat4(),
+            bg->transform.scale = glm::scale(glm::mat4(1.0),
                     glm::vec3(6, 6, 1));
         }
     }
@@ -478,21 +478,21 @@ class view_switcher : public wayfire_plugin_t
         {
             if (v.updates & UPDATE_OFFSET)
             {
-                v.view->transform.translation = glm::translate(glm::mat4(), glm::vec3(
+                v.view->transform.translation = glm::translate(glm::mat4(1.0), glm::vec3(
                             GetProgress(v.off_x.start, v.off_x.end, step, maxstep),
                             GetProgress(v.off_y.start, v.off_y.end, step, maxstep),
                             GetProgress(v.off_z.start, v.off_z.end, step, maxstep)));
             }
             if (v.updates & UPDATE_SCALE)
             {
-                v.view->transform.scale = glm::scale(glm::mat4(), glm::vec3(
+                v.view->transform.scale = glm::scale(glm::mat4(1.0), glm::vec3(
                             GetProgress(v.scale_x.start, v.scale_x.end, step, maxstep),
                             GetProgress(v.scale_y.start, v.scale_y.end, step, maxstep),
                             1));
             }
             if (v.updates & UPDATE_ROTATION)
             {
-                v.view->transform.rotation = glm::rotate(glm::mat4(),
+                v.view->transform.rotation = glm::rotate(glm::mat4(1.0),
                         GetProgress(v.rot.start, v.rot.end, step, maxstep),
                         glm::vec3(0, 1, 0));
             }
@@ -525,7 +525,7 @@ class view_switcher : public wayfire_plugin_t
         if(current_step == initial_animation_steps)
         {
             for (auto &v : active_views)
-                v.view->transform.translation = glm::mat4();
+                v.view->transform.translation = glm::mat4(1.0);
 
             state.in_fold = false;
             if (!state.reversed_folds)
@@ -718,14 +718,14 @@ class view_switcher : public wayfire_plugin_t
         auto bg = output->workspace->get_background_view();
         if (bg) {
             bg->transform.color = glm::vec4(1);
-            bg->transform.translation = glm::mat4();
-            bg->transform.scale = glm::mat4();
+            bg->transform.translation = glm::mat4(1.0);
+            bg->transform.scale = glm::mat4(1.0);
         }
 
-        wayfire_view_transform::global_view_projection = glm::mat4();
+        wayfire_view_transform::global_view_projection = glm::mat4(1.0);
 
         for(auto v : views)
-            v->transform.scale = v->transform.translation = v->transform.rotation = glm::mat4();
+            v->transform.scale = v->transform.translation = v->transform.rotation = glm::mat4(1.0);
 
         state.active = false;
         view_chosen(current_view_index);
