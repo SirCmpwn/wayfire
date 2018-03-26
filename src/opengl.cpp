@@ -216,22 +216,22 @@ namespace OpenGL {
                         const weston_geometry& g,
                         const texture_geometry& texg, uint32_t bits)
     {
-	    if ((bits & DONT_RELOAD_PROGRAM) == 0)
+        if ((bits & DONT_RELOAD_PROGRAM) == 0)
             use_default_program(bits);
 
-	    GL_CALL(glUniform1f(bound->w2ID, bound->width / 2));
-	    GL_CALL(glUniform1f(bound->h2ID, bound->height / 2));
+        GL_CALL(glUniform1f(bound->w2ID, bound->width / 2));
+        GL_CALL(glUniform1f(bound->h2ID, bound->height / 2));
 
-	    if ((bits & TEXTURE_TRANSFORM_USE_DEVCOORD))
-	    {
-		    use_device_viewport();
-	    } else
-	    {
-		    GL_CALL(glViewport(0, 0, bound->width, bound->height));
-	    }
+        if ((bits & TEXTURE_TRANSFORM_USE_DEVCOORD))
+        {
+            use_device_viewport();
+        } else
+        {
+            GL_CALL(glViewport(0, 0, bound->width, bound->height));
+        }
 
-	    float w2 = float(bound->width) / 2.;
-	    float h2 = float(bound->height) / 2.;
+        float w2 = float(bound->width) / 2.;
+        float h2 = float(bound->height) / 2.;
 
         float tlx = float(g.x) - w2,
               tly = h2 - float(g.y);
@@ -264,8 +264,6 @@ namespace OpenGL {
             coordData[4] = texg.x2; coordData[5] = texg.y1;
             coordData[6] = texg.x1; coordData[7] = texg.y1;
         }
-
-	debug << g.x << "x" << g.y << " " << g.width << "x" << g.height << std::endl;
 
         GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
         GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
@@ -302,15 +300,6 @@ namespace OpenGL {
     {
         use_default_program(bits);
         GL_CALL(glUniformMatrix4fv(bound->mvpID, 1, GL_FALSE, &transform[0][0]));
-
-	debug << "###############" << std::endl;
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-			debug << transform[i][j] << " ";
-		debug << std::endl;
-	}
-
         GL_CALL(glUniform4fv(bound->colorID, 1, &color[0]));
 
         GL_CALL(glEnable(GL_BLEND));
@@ -369,7 +358,7 @@ namespace OpenGL {
 
         prepare_framebuffer(dst_fbuff, dst_tex);
         GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h,
-                    0, GL_RGBA, GL_UNSIGNED_BYTE, 0));
+                             0, GL_RGBA, GL_UNSIGNED_BYTE, 0));
 
         prepare_framebuffer(src_fbuff, tex);
 
