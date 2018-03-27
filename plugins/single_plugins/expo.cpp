@@ -46,7 +46,7 @@ class wayfire_expo : public wayfire_plugin_t {
         grab_interface->abilities_mask = WF_ABILITY_CONTROL_WM;
 
         auto section = config->get_section("expo");
-        auto toggle_key = section->get_key("toggle", {MODIFIER_SUPER, KEY_E});
+        auto toggle_key = section->get_key("activate", {MODIFIER_SUPER, KEY_E});
 
         if (!toggle_key.keyval || !toggle_key.mod)
             return;
