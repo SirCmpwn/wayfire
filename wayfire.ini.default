@@ -184,6 +184,7 @@ min_brightness = 1
 
 # show a live preview of all workspaces on the current output, can also move the windows on them
 [expo]
+activate = <super> KEY_E
 duration = 300
 offset = 0
 background = 0.1 0.1 0.1 1.0
