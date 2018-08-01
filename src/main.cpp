@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
     */
 
 #ifdef WAYFIRE_DEBUG_ENABLED
-    wlr_log_init(L_DEBUG, NULL);
+    wlr_log_init(WLR_DEBUG, NULL);
 #else
-    wlr_log_init(L_ERROR, NULL);
+    wlr_log_init(WLR_ERROR, NULL);
 #endif
 
     std::string home_dir = secure_getenv("HOME");
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     core = new wayfire_core();
     core->display  = wl_display_create();
     core->ev_loop  = wl_display_get_event_loop(core->display);
-    core->backend  = wlr_backend_autocreate(core->display);
+    core->backend  = wlr_backend_autocreate(core->display, NULL);
     core->renderer = wlr_backend_get_renderer(core->backend);
 
     /*

@@ -695,7 +695,7 @@ void input_manager::handle_pointer_axis(wlr_event_pointer_axis *ev)
         return;
     }
 
-    wlr_seat_pointer_notify_axis(seat, ev->time_msec, ev->orientation, ev->delta);
+    wlr_seat_pointer_notify_axis(seat, ev->time_msec, ev->orientation, ev->delta, ev->delta_discrete, ev->source);
 }
 
 void input_manager::set_cursor(wlr_seat_pointer_request_set_cursor_event *ev)
@@ -1226,7 +1226,6 @@ void wayfire_core::init(wayfire_config *conf)
     device_config::load(conf);
 
     data_device_manager = wlr_data_device_manager_create(display);
-    wlr_renderer_init_wl_shm(renderer, display);
 
     output_layout = wlr_output_layout_create();
     core->compositor = wlr_compositor_create(display, wlr_backend_get_renderer(backend));

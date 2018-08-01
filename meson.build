@@ -13,6 +13,15 @@ project(
 	],
 )
 
+add_project_arguments(
+	'-DWLR_USE_UNSTABLE',
+	language: 'c',
+)
+add_project_arguments(
+	'-DWLR_USE_UNSTABLE',
+	language: 'cpp',
+)
+
 so_version = ['0', '0', '0']
 wayfire_api_inc  = include_directories('src/api')
 

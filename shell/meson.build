@@ -1,6 +1,6 @@
 libwfwindow = static_library('wfwindow',
     ['window.cpp', 'shm-surface.cpp'],
-    dependencies: [cairo, wf_protos],
+    dependencies: [cairo, wf_protos, wlroots],
     include_directories: wayfire_conf_inc)
 wfwindow = declare_dependency(link_with: libwfwindow)
 

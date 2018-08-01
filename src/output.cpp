@@ -715,7 +715,7 @@ void render_manager::workspace_stream_update(wf_workspace_stream *stream,
                 {
                     pixman_region32_t opaque;
                     pixman_region32_init(&opaque);
-                    pixman_region32_copy(&opaque, &surface->surface->current->opaque);
+                    pixman_region32_copy(&opaque, &surface->surface->current.opaque);
                     pixman_region32_translate(&opaque, x, y);
                     wlr_region_scale(&opaque, &opaque, output->handle->scale);
                     //pixman_region32_subtract(&ws_damage, &ws_damage, &opaque);

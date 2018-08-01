@@ -18,6 +18,9 @@ extern "C"
 #define static
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_matrix.h>
+#include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/types/wlr_xdg_shell_v6.h>
+#include <wlr/xwayland.h>
 #include <wlr/util/region.h>
 #undef static
 }
@@ -216,8 +219,9 @@ bool wayfire_surface_t::is_subsurface()
 
 void wayfire_surface_t::get_child_position(int &x, int &y)
 {
-    x = surface->current->subsurface_position.x;
-    y = surface->current->subsurface_position.y;
+	auto sub = wlr_subsurface_from_wlr_surface(surface);
+    x = sub->current.x;
+    y = sub->current.y;
 }
 
 wf_point wayfire_surface_t::get_output_position()
@@ -237,11 +241,7 @@ wf_geometry wayfire_surface_t::get_output_geometry()
         return {0, 0, 0, 0};
 
     auto pos = get_output_position();
-    return {
-        pos.x, pos.y,
-        surface->current ? surface->current->width : 0,
-        surface->current ? surface->current->height : 0
-    };
+    return { pos.x, pos.y, surface->current.width, surface->current.height };
 }
 
 void wayfire_surface_t::map(wlr_surface *surface)
@@ -315,7 +315,7 @@ void wayfire_surface_t::commit()
     pixman_region32_t dmg;
 
     pixman_region32_init(&dmg);
-    pixman_region32_copy(&dmg, &surface->current->surface_damage);
+    pixman_region32_copy(&dmg, &surface->current.surface_damage);
     pixman_region32_translate(&dmg, rect.x, rect.y);
 
     /* TODO: recursively damage children? */
@@ -395,8 +395,8 @@ void wayfire_surface_t::render_fbo(int x, int y, int fb_w, int fb_h,
     wlr_box fb_geometry;
 
     fb_geometry.x = x; fb_geometry.y = y;
-    fb_geometry.width = surface->current->width;
-    fb_geometry.height = surface->current->height;
+    fb_geometry.width = surface->current.width;
+    fb_geometry.height = surface->current.height;
 
     float id[9];
     wlr_matrix_projection(id, fb_w, fb_h, WL_OUTPUT_TRANSFORM_NORMAL);
@@ -407,7 +407,9 @@ void wayfire_surface_t::render_fbo(int x, int y, int fb_w, int fb_h,
     wlr_matrix_scale(matrix, 1.0 / fb_geometry.width, 1.0 / fb_geometry.height);
 
     wlr_renderer_scissor(core->renderer, NULL);
-    wlr_render_texture(core->renderer, surface->texture, matrix, 0, 0, 1.0f);
+
+	auto texture = wlr_surface_get_texture(surface);
+    wlr_render_texture(core->renderer, texture, matrix, 0, 0, 1.0f);
 }
 
 static wlr_box get_scissor_box(wayfire_output *output, wlr_box *box)
@@ -428,7 +430,7 @@ void wayfire_surface_t::render(int x, int y, wlr_box *damage)
     if (!wlr_surface_has_buffer(surface))
         return;
 
-    wlr_box geometry {x, y, surface->current->width, surface->current->height};
+    wlr_box geometry {x, y, surface->current.width, surface->current.height};
     geometry = get_output_box_from_box(geometry, output->handle->scale,
                                        WL_OUTPUT_TRANSFORM_NORMAL);
 
@@ -437,13 +439,14 @@ void wayfire_surface_t::render(int x, int y, wlr_box *damage)
     auto rr = core->renderer;
     float matrix[9];
     wlr_matrix_project_box(matrix, &geometry,
-                           surface->current->transform,
+                           surface->current.transform,
                            0, output->handle->transform_matrix);
 
     auto box = get_scissor_box(output, damage);
     wlr_renderer_scissor(rr, &box);
 
-    wlr_render_texture_with_matrix(rr, surface->texture, matrix, alpha);
+	auto texture = wlr_surface_get_texture(surface);
+    wlr_render_texture_with_matrix(rr, texture, matrix, alpha);
 }
 
 void wayfire_surface_t::render_pixman(int x, int y, pixman_region32_t *damage)
@@ -497,8 +500,8 @@ bool wayfire_view_t::update_size()
 
     int old_w = geometry.width, old_h = geometry.height;
 
-    geometry.width = surface->current ? surface->current->width  : 0;
-    geometry.height = surface->current? surface->current->height : 0;
+    geometry.width = surface->current.width;
+    geometry.height = surface->current.height;
 
     return geometry.width != old_w || geometry.height != old_h;
 }
@@ -756,7 +759,7 @@ void wayfire_view_t::take_snapshot()
     offscreen_buffer.output_x = output_geometry.x;
     offscreen_buffer.output_y = output_geometry.y;
 
-    int scale = surface->current->scale;
+    int scale = surface->current.scale;
     if (output_geometry.width * scale != offscreen_buffer.fb_width
         || output_geometry.height * scale != offscreen_buffer.fb_height)
     {
@@ -996,9 +999,7 @@ class wayfire_xdg6_popup : public wayfire_surface_t
 
         virtual void get_child_position(int &x, int &y)
         {
-            double sx, sy;
-            wlr_xdg_surface_v6_popup_get_position(popup->base, &sx, &sy);
-            x = sx; y = sy;
+            wlr_xdg_popup_v6_get_anchor_point(popup->base->popup, &x, &y);
         }
 
         virtual bool is_subsurface() { return true; }
@@ -1762,7 +1763,7 @@ class wayfire_unmanaged_xwayland_view : public wayfire_view_t
 
     wlr_surface *get_keyboard_focus_surface()
     {
-        if (wlr_xwayland_surface_is_unmanaged(xw))
+        if (wlr_xwayland_or_surface_wants_focus(xw))
             return nullptr;
         return surface;
     }
@@ -1785,7 +1786,7 @@ void notify_xwayland_created(wl_listener *, void *data)
     auto xsurf = (wlr_xwayland_surface*) data;
 
     wayfire_view view = nullptr;
-    if (wlr_xwayland_surface_is_unmanaged(xsurf) || xsurf->override_redirect)
+    if (xsurf->override_redirect)
     {
         view = std::make_shared<wayfire_unmanaged_xwayland_view> (xsurf);
     } else
@@ -1808,6 +1809,6 @@ void init_desktop_apis()
     wl_signal_add(&core->api->v6->events.new_surface, &core->api->v6_created);
 
     core->api->xwayland_created.notify = notify_xwayland_created;
-    core->api->xwayland = wlr_xwayland_create(core->display, core->compositor);
+    core->api->xwayland = wlr_xwayland_create(core->display, core->compositor, true);
     wl_signal_add(&core->api->xwayland->events.new_surface, &core->api->xwayland_created);
 }
